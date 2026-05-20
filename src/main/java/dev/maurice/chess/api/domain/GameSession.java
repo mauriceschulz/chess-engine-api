@@ -14,8 +14,8 @@ public class GameSession {
     private final Instant createdAt;
     private Instant updatedAt;
 
-    public GameSession (Color playerColor) {
-        this.id = UUID.randomUUID();
+    public GameSession (UUID id, Color playerColor) {
+        this.id = id;
         this.playerColor = playerColor;
         this.sideToMove = Color.WHITE;
         this.status = GameStatus.ACTIVE;

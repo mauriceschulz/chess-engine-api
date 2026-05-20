@@ -2,8 +2,8 @@ package dev.maurice.chess.api.domain;
 
 public enum GameStatus {
     ACTIVE,
-    CHECK_MATE,
+    CHECKMATE,
     DRAW,
-    STALE_MATE,
+    STALEMATE,
     RESIGNED
 }

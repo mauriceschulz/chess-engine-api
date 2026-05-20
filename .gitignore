@@ -1,0 +1,11 @@
+# Intellij
+.idea/
+
+# Maven 
+target/
+
+# OS
+.DS_Store
+
+# Logs
+*.log

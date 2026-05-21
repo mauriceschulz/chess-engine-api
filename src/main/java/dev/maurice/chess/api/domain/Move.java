@@ -28,10 +28,26 @@ public class Move {
     }
 
     public static Move fromUci(String value) {
-        return new Move(null, null, null);
+        Position from = Position.fromAlgebraic(value.substring(0, 2));
+        Position to = Position.fromAlgebraic(value.substring(2, 4));
+
+        if (value.length() == 5) {
+            PieceType promotion = PieceType.fromPromotionChar(value.charAt(4));
+            return new Move(from, to, promotion);
+        }
+
+        return new Move(from, to, null);
     }
 
     public String toUci() {
-        return "";
+        String uci = this.from.toAlgebraic()
+                + this.to.toAlgebraic();
+
+        if (this.promotion != null) {
+            uci += this.promotion.toPromotionChar();
+        }
+
+        return uci;
+
     }
 }

@@ -8,15 +8,30 @@ public class Board {
     }
 
     public Piece getPiece(Position position) {
-        return null;
+        if (!position.isValid()) {
+            throw new IllegalArgumentException("Position is not valid: " + position.toAlgebraic());
+        }
+
+        return squares[position.getRow()][position.getCol()];
     }
 
     public void setPiece(Position position, Piece piece) {
+        if (!position.isValid()) {
+            throw new IllegalArgumentException("Position is not valid: " + position.toAlgebraic());
+        }
 
+        squares[position.getRow()][position.getCol()] = piece;
     }
 
     public void movePiece(Move move) {
+        Piece piece = getPiece(move.getFrom());
 
+        if (piece == null) {
+            throw new IllegalStateException("No piece found at: " + move.getFrom().toAlgebraic());
+        }
+
+        setPiece(move.getTo(), piece);
+        setPiece(move.getFrom(), null);
     }
 
     public static Board createInitial() {

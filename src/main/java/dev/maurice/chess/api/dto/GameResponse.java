@@ -5,6 +5,7 @@ import java.util.UUID;
 
 public record GameResponse(
         UUID gameID,
+        String fen,
         String playerColor,
         String sideToMove,
         String status,

@@ -37,6 +37,7 @@ public class GameService {
     private GameResponse toResponse(GameSession game) {
         return new GameResponse(
                 game.getId(),
+                game.getBoard().toFen(),
                 game.getPlayerColor().toString(),
                 game.getSideToMove().toString(),
                 game.getStatus().toString(),

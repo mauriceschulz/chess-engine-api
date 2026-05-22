@@ -7,6 +7,7 @@ import java.util.UUID;
 
 public class GameSession {
     private final UUID id;
+    private final Board board;
     private Color playerColor;
     private Color sideToMove;
     private GameStatus status;
@@ -16,6 +17,7 @@ public class GameSession {
 
     public GameSession (UUID id, Color playerColor) {
         this.id = id;
+        this.board = Board.createInitial();
         this.playerColor = playerColor;
         this.sideToMove = Color.WHITE;
         this.status = GameStatus.ACTIVE;
@@ -26,6 +28,10 @@ public class GameSession {
 
     public UUID getId() {
         return this.id;
+    }
+
+    public Board getBoard() {
+        return this.board;
     }
 
     public Color getPlayerColor() {

@@ -58,15 +58,18 @@ public class GameSession {
         return this.updatedAt;
     }
 
-    public void addMove () {
-
-    }
-
     public void switchTurn () {
         this.sideToMove = sideToMove.opposite();
     }
 
     public void updateStatus (GameStatus status) {
         this.status = status;
+    }
+
+    public void applyMove(Move move) {
+        board.movePiece(move);
+        moveHistory.add(move.toUci());
+        switchTurn();
+        updatedAt = Instant.now();
     }
 }

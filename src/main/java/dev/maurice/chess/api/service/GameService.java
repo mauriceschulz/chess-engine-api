@@ -2,10 +2,14 @@ package dev.maurice.chess.api.service;
 
 import dev.maurice.chess.api.domain.Color;
 import dev.maurice.chess.api.domain.GameSession;
+import dev.maurice.chess.api.domain.Move;
 import dev.maurice.chess.api.dto.CreateGameRequest;
 import dev.maurice.chess.api.dto.GameResponse;
+import dev.maurice.chess.api.dto.MoveRequest;
+import dev.maurice.chess.api.dto.MoveResponse;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,7 +27,7 @@ public class GameService {
 
         games.put(game.getId(), game);
 
-        return toResponse(game);
+        return toGameResponse(game);
     }
 
     private Color parsePlayerColor(String value) {
@@ -34,14 +38,37 @@ public class GameService {
         return Color.valueOf(value.toUpperCase());
     }
 
-    private GameResponse toResponse(GameSession game) {
+    private GameResponse toGameResponse(GameSession game) {
         return new GameResponse(
                 game.getId(),
                 game.getBoard().toFen(),
-                game.getPlayerColor().toString(),
-                game.getSideToMove().toString(),
-                game.getStatus().toString(),
-                game.getMoveHistory()
+                game.getPlayerColor().name(),
+                game.getSideToMove().name(),
+                game.getStatus().name(),
+                List.copyOf(game.getMoveHistory())
         );
+    }
+
+    private MoveResponse toMoveResponse(GameSession game, Move move) {
+        return new MoveResponse(
+                game.getId(),
+                move.toUci(),
+                game.getBoard().toFen(),
+                game.getSideToMove().name(),
+                game.getStatus().name(),
+                List.copyOf(game.getMoveHistory())
+        );
+    }
+
+    public MoveResponse makeMove(UUID gameId, MoveRequest request) {
+        GameSession game = games.get(gameId);
+
+        if (game == null) {
+            throw new IllegalArgumentException("Game not found: " + gameId);
+        }
+
+        Move move = Move.fromUci(request.move());
+        game.applyMove(move);
+        return toMoveResponse(game, move);
     }
 }

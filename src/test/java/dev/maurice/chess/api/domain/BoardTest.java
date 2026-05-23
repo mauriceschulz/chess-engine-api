@@ -15,4 +15,17 @@ class BoardTest {
                 board.toFen()
         );
     }
+
+    @Test
+    void fenStringShouldBeModifiedAfterMove() {
+        Board board = Board.createInitial();
+
+        Move move = Move.fromUci("e2e4");
+        board.movePiece(move);
+
+        assertEquals(
+                "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR",
+                board.toFen()
+        );
+    }
 }

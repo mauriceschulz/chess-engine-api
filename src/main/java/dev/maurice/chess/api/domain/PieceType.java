@@ -11,7 +11,7 @@ public enum PieceType {
     public static PieceType fromPromotionChar(char promotionChar) {
         return switch(Character.toLowerCase(promotionChar)) {
             case 'q' -> QUEEN;
-            case 'k' -> KNIGHT;
+            case 'n' -> KNIGHT;
             case 'b' -> BISHOP;
             case 'r' -> ROOK;
             default -> throw new IllegalArgumentException("Invalid promotion piece: " + promotionChar);

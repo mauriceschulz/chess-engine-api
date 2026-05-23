@@ -32,4 +32,12 @@ public class MoveTest {
                 Move.fromUci("e7e8q").toUci()
         );
     }
+
+    @Test
+    void canCorrectlyParseKnightPromotion() {
+        assertEquals(
+                "e7e8n",
+                Move.fromUci("e7e8n").toUci()
+        );
+    }
 }

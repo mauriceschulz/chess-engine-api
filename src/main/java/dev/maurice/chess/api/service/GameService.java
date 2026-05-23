@@ -7,6 +7,7 @@ import dev.maurice.chess.api.dto.CreateGameRequest;
 import dev.maurice.chess.api.dto.GameResponse;
 import dev.maurice.chess.api.dto.MoveRequest;
 import dev.maurice.chess.api.dto.MoveResponse;
+import dev.maurice.chess.api.exception.GameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -64,7 +65,7 @@ public class GameService {
         GameSession game = games.get(gameId);
 
         if (game == null) {
-            throw new IllegalArgumentException("Game not found: " + gameId);
+            throw new GameNotFoundException(gameId);
         }
 
         Move move = Move.fromUci(request.move());

@@ -1,10 +1,16 @@
 package dev.maurice.chess.api.domain;
 
+import dev.maurice.chess.api.exception.InvalidMoveException;
+
 public class Position {
     private final int row;
     private final int col;
 
     public Position(int row, int col) {
+        if (row < 0 || row >= 8 || col < 0 || col >= 8) {
+            throw new InvalidMoveException("Invalid board position:");
+        }
+
         this.row = row;
         this.col = col;
     }
@@ -18,10 +24,13 @@ public class Position {
     }
 
     public static Position fromAlgebraic(String value) {
+        if (value == null || !value.matches("[a-hA-H][1-8]")) {
+            throw new InvalidMoveException("Illegal board position: " + value);
+        }
+
         value = value.toLowerCase();
 
         int col = value.charAt(0) - 'a';
-
         int rank = Character.getNumericValue(value.charAt(1));
         int row = 8 - rank;
 
@@ -29,7 +38,6 @@ public class Position {
     }
 
     public String toAlgebraic() {
-
         char file = (char) ('a' + this.col);
         char rank = (char) ('8' - this.row);
 

@@ -1,5 +1,7 @@
 package dev.maurice.chess.api.domain;
 
+import dev.maurice.chess.api.exception.InvalidMoveException;
+
 public class Move {
     private final Position from;
     private final Position to;
@@ -10,6 +12,14 @@ public class Move {
     }
 
     public Move(Position from, Position to, PieceType promotion) {
+        if (from == null || to == null) {
+            throw new InvalidMoveException("Move must contain a source and a destination");
+        }
+
+        if (promotion == PieceType.KING || promotion == PieceType.PAWN) {
+            throw new InvalidMoveException("Invalid promotion piece: " + promotion);
+        }
+
         this.from = from;
         this.to = to;
         this.promotion = promotion;
@@ -28,6 +38,10 @@ public class Move {
     }
 
     public static Move fromUci(String value) {
+        if (value == null || !value.matches("[a-hA-H][1-8][a-hA-H][1-8][qQrRnNbB]?")) {
+            throw new InvalidMoveException("Invalid move: " + value);
+        }
+
         Position from = Position.fromAlgebraic(value.substring(0, 2));
         Position to = Position.fromAlgebraic(value.substring(2, 4));
 

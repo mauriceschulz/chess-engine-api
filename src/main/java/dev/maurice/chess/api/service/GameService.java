@@ -8,6 +8,7 @@ import dev.maurice.chess.api.dto.GameResponse;
 import dev.maurice.chess.api.dto.MoveRequest;
 import dev.maurice.chess.api.dto.MoveResponse;
 import dev.maurice.chess.api.exception.GameNotFoundException;
+import dev.maurice.chess.api.rules.MoveValidator;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,6 +20,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GameService {
 
     private final Map<UUID, GameSession> games = new ConcurrentHashMap<>();
+    private final MoveValidator moveValidator;
+
+    public GameService(MoveValidator moveValidator) {
+        this.moveValidator = moveValidator;
+    }
 
     public GameResponse createGame(CreateGameRequest request) {
 
@@ -69,6 +75,7 @@ public class GameService {
         }
 
         Move move = Move.fromUci(request.move());
+        moveValidator.validate(game, move);
         game.applyMove(move);
         return toMoveResponse(game, move);
     }

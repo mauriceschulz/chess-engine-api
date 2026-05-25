@@ -12,8 +12,9 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MoveValidatorTest {
-
-    private final MoveValidator moveValidator = new MoveValidator(new PieceMovementValidator());
+    private final PieceMovementValidator pieceMovementValidator = new PieceMovementValidator();
+    private final MoveValidator moveValidator = new MoveValidator(pieceMovementValidator,
+                                                                    new CheckValidator(pieceMovementValidator));
 
     @Test
     void validateShouldAcceptValidMove() {

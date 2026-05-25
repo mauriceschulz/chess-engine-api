@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record GameResponse(
-        UUID gameID,
+        UUID gameId,
         String fen,
         String playerColor,
         String sideToMove,

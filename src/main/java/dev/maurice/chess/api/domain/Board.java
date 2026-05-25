@@ -58,6 +58,22 @@ public class Board {
         return board;
     }
 
+    public Board copy() {
+        Board copy = new Board();
+
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+
+                Position position = new Position(row, col);
+
+                Piece piece = this.getPiece(position);
+
+                copy.setPiece(position, piece);
+            }
+        }
+        return copy;
+    }
+
     public static void placePiece(Board board, int row, int col, PieceType type, Color color) {
         Position position = new Position(row, col);
         Piece piece = new Piece(type, color);

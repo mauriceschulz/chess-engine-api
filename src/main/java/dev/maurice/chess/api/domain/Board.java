@@ -58,6 +58,56 @@ public class Board {
         return board;
     }
 
+    public static Board fromFen(String fen) {
+        if (fen == null || fen.isBlank()) {
+            throw new IllegalArgumentException("FEN must not be empty");
+        }
+
+        String piecePlacement = fen.trim().split("\\s+")[0];
+        String[] ranks = piecePlacement.split("/", -1);
+
+        if (ranks.length != 8) {
+            throw new IllegalArgumentException("FEN must contain exactly 8 ranks: " + fen);
+        }
+
+        Board board = new Board();
+
+        for (int row = 0; row < 8; row++) {
+            int col = 0;
+
+            for (int index = 0; index < ranks[row].length(); index++) {
+                char value = ranks[row].charAt(index);
+
+                if (Character.isDigit(value)) {
+                    int emptySquares = Character.getNumericValue(value);
+
+                    if (emptySquares < 1 || emptySquares > 8) {
+                        throw new IllegalArgumentException("Invalid empty square count in FEN: " + value);
+                    }
+
+                    col += emptySquares;
+                    continue;
+                }
+
+                if (col >= 8) {
+                    throw new IllegalArgumentException("FEN rank contains too many squares: " + ranks[row]);
+                }
+
+                board.setPiece(
+                        new Position(row, col),
+                        new Piece(pieceTypeFromFenChar(value), colorFromFenChar(value))
+                );
+                col++;
+            }
+
+            if (col != 8) {
+                throw new IllegalArgumentException("FEN rank must contain exactly 8 squares: " + ranks[row]);
+            }
+        }
+
+        return board;
+    }
+
     public Board copy() {
         Board copy = new Board();
 
@@ -79,6 +129,22 @@ public class Board {
         Piece piece = new Piece(type, color);
 
         board.setPiece(position, piece);
+    }
+
+    private static PieceType pieceTypeFromFenChar(char value) {
+        return switch (Character.toLowerCase(value)) {
+            case 'k' -> PieceType.KING;
+            case 'q' -> PieceType.QUEEN;
+            case 'b' -> PieceType.BISHOP;
+            case 'n' -> PieceType.KNIGHT;
+            case 'p' -> PieceType.PAWN;
+            case 'r' -> PieceType.ROOK;
+            default -> throw new IllegalArgumentException("Invalid piece in FEN: " + value);
+        };
+    }
+
+    private static Color colorFromFenChar(char value) {
+        return Character.isUpperCase(value) ? Color.WHITE : Color.BLACK;
     }
 
     private char toFenChar(Piece piece) {

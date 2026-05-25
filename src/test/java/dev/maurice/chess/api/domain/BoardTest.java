@@ -3,6 +3,7 @@ package dev.maurice.chess.api.domain;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class BoardTest {
 
@@ -27,5 +28,38 @@ class BoardTest {
                 "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR",
                 board.toFen()
         );
+    }
+
+    @Test
+    void boardFromFenShouldCreateBoardFromPiecePlacement() {
+        Board board = Board.fromFen("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR");
+
+        assertEquals(
+                "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR",
+                board.toFen()
+        );
+    }
+
+    @Test
+    void boardFromFenShouldAcceptFullFenString() {
+        Board board = Board.fromFen(
+                "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
+        );
+
+        assertEquals(
+                "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR",
+                board.toFen()
+        );
+    }
+
+    @Test
+    void boardFromFenShouldRejectInvalidFenStrings() {
+        assertThrows(IllegalArgumentException.class, () -> Board.fromFen(null));
+        assertThrows(IllegalArgumentException.class, () -> Board.fromFen(""));
+        assertThrows(IllegalArgumentException.class, () -> Board.fromFen("8/8/8/8/8/8/8"));
+        assertThrows(IllegalArgumentException.class, () -> Board.fromFen("8/8/8/8/8/8/8/9"));
+        assertThrows(IllegalArgumentException.class, () -> Board.fromFen("8/8/8/8/8/8/8/X7"));
+        assertThrows(IllegalArgumentException.class, () -> Board.fromFen("8/8/8/8/8/8/8/7"));
+        assertThrows(IllegalArgumentException.class, () -> Board.fromFen("8/8/8/8/8/8/8/8/"));
     }
 }

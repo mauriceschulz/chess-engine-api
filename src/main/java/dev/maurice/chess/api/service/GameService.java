@@ -1,5 +1,6 @@
 package dev.maurice.chess.api.service;
 
+import dev.maurice.chess.api.domain.Board;
 import dev.maurice.chess.api.domain.Color;
 import dev.maurice.chess.api.domain.GameSession;
 import dev.maurice.chess.api.domain.Move;
@@ -30,7 +31,11 @@ public class GameService {
 
         Color playerColor = parsePlayerColor(request.playerColor());
 
-        GameSession game = new GameSession(UUID.randomUUID(), playerColor);
+        Board board = request.fen() == null || request.fen().isBlank()
+                ? Board.createInitial()
+                : Board.fromFen(request.fen());
+
+        GameSession game = new GameSession(UUID.randomUUID(), playerColor, board);
 
         games.put(game.getId(), game);
 

@@ -8,12 +8,13 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PieceMovementValidatorTest {
+    private static final String STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
     private final PieceMovementValidator validator = new PieceMovementValidator();
 
     @Test
     void validateShouldAcceptValidKnightMove() {
-        Board board = Board.createInitial();
+        Board board = initialBoard();
         Move move = Move.fromUci("b1c3");
         Piece piece = board.getPiece(move.getFrom());
 
@@ -22,7 +23,7 @@ class PieceMovementValidatorTest {
 
     @Test
     void validateShouldRejectInvalidKnightMove() {
-        Board board = Board.createInitial();
+        Board board = initialBoard();
         Move move = Move.fromUci("b1b3");
         Piece piece = board.getPiece(move.getFrom());
 
@@ -34,7 +35,7 @@ class PieceMovementValidatorTest {
 
     @Test
     void validateShouldAcceptPawnSingleStep() {
-        Board board = Board.createInitial();
+        Board board = initialBoard();
         Move move = Move.fromUci("e2e3");
         Piece piece = board.getPiece(move.getFrom());
 
@@ -43,7 +44,7 @@ class PieceMovementValidatorTest {
 
     @Test
     void validateShouldAcceptPawnDoubleStepFromStartRank() {
-        Board board = Board.createInitial();
+        Board board = initialBoard();
         Move move = Move.fromUci("e2e4");
         Piece piece = board.getPiece(move.getFrom());
 
@@ -52,7 +53,7 @@ class PieceMovementValidatorTest {
 
     @Test
     void validateShouldRejectPawnMovingBackward() {
-        Board board = Board.createInitial();
+        Board board = initialBoard();
         Move move = Move.fromUci("e2e1");
         Piece piece = board.getPiece(move.getFrom());
 
@@ -64,11 +65,7 @@ class PieceMovementValidatorTest {
 
     @Test
     void validateShouldRejectBlockedPawnDoubleStep() {
-        Board board = Board.createInitial();
-        board.setPiece(
-                Position.fromAlgebraic("e3"),
-                new Piece(PieceType.KNIGHT, Color.WHITE)
-        );
+        Board board = Board.fromFen("rnbqkbnr/pppppppp/8/8/8/4N3/PPPPPPPP/RNBQKBNR");
 
         Move move = Move.fromUci("e2e4");
         Piece piece = board.getPiece(move.getFrom());
@@ -81,7 +78,7 @@ class PieceMovementValidatorTest {
 
     @Test
     void validateShouldRejectBlockedRookMove() {
-        Board board = Board.createInitial();
+        Board board = initialBoard();
         Move move = Move.fromUci("a1a4");
         Piece piece = board.getPiece(move.getFrom());
 
@@ -93,10 +90,7 @@ class PieceMovementValidatorTest {
 
     @Test
     void validateShouldAcceptClearRookMove() {
-        Board board = Board.createInitial();
-
-        board.setPiece(Position.fromAlgebraic("a2"), null);
-        board.setPiece(Position.fromAlgebraic("a3"), null);
+        Board board = Board.fromFen("rnbqkbnr/pppppppp/8/8/8/8/1PPPPPPP/RNBQKBNR");
 
         Move move = Move.fromUci("a1a4");
         Piece piece = board.getPiece(move.getFrom());
@@ -106,7 +100,7 @@ class PieceMovementValidatorTest {
 
     @Test
     void validateShouldRejectBlockedBishopMove() {
-        Board board = Board.createInitial();
+        Board board = initialBoard();
         Move move = Move.fromUci("c1h6");
         Piece piece = board.getPiece(move.getFrom());
 
@@ -118,12 +112,7 @@ class PieceMovementValidatorTest {
 
     @Test
     void validateShouldAcceptClearBishopMove() {
-        Board board = Board.createInitial();
-
-        board.setPiece(Position.fromAlgebraic("d2"), null);
-        board.setPiece(Position.fromAlgebraic("e3"), null);
-        board.setPiece(Position.fromAlgebraic("f4"), null);
-        board.setPiece(Position.fromAlgebraic("g5"), null);
+        Board board = Board.fromFen("rnbqkbnr/pppppppp/8/8/8/8/PPP1PPPP/RNBQKBNR");
 
         Move move = Move.fromUci("c1h6");
         Piece piece = board.getPiece(move.getFrom());
@@ -133,10 +122,7 @@ class PieceMovementValidatorTest {
 
     @Test
     void validateShouldAcceptQueenRookLikeMove() {
-        Board board = Board.createInitial();
-
-        board.setPiece(Position.fromAlgebraic("d2"), null);
-        board.setPiece(Position.fromAlgebraic("d3"), null);
+        Board board = Board.fromFen("rnbqkbnr/pppppppp/8/8/8/8/PPP1PPPP/RNBQKBNR");
 
         Move move = Move.fromUci("d1d4");
         Piece piece = board.getPiece(move.getFrom());
@@ -146,11 +132,7 @@ class PieceMovementValidatorTest {
 
     @Test
     void validateShouldAcceptQueenBishopLikeMove() {
-        Board board = Board.createInitial();
-
-        board.setPiece(Position.fromAlgebraic("e2"), null);
-        board.setPiece(Position.fromAlgebraic("f3"), null);
-        board.setPiece(Position.fromAlgebraic("g4"), null);
+        Board board = Board.fromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPP1PPP/RNBQKBNR");
 
         Move move = Move.fromUci("d1h5");
         Piece piece = board.getPiece(move.getFrom());
@@ -160,9 +142,7 @@ class PieceMovementValidatorTest {
 
     @Test
     void validateShouldAcceptKingOneStepMove() {
-        Board board = Board.createInitial();
-
-        board.setPiece(Position.fromAlgebraic("e2"), null);
+        Board board = Board.fromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPP1PPP/RNBQKBNR");
 
         Move move = Move.fromUci("e1e2");
         Piece piece = board.getPiece(move.getFrom());
@@ -172,10 +152,7 @@ class PieceMovementValidatorTest {
 
     @Test
     void validateShouldRejectKingTwoStepMove() {
-        Board board = Board.createInitial();
-
-        board.setPiece(Position.fromAlgebraic("e2"), null);
-        board.setPiece(Position.fromAlgebraic("e3"), null);
+        Board board = Board.fromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPP1PPP/RNBQKBNR");
 
         Move move = Move.fromUci("e1e3");
         Piece piece = board.getPiece(move.getFrom());
@@ -184,5 +161,9 @@ class PieceMovementValidatorTest {
                 InvalidMoveException.class,
                 () -> validator.validate(board, move, piece)
         );
+    }
+
+    private Board initialBoard() {
+        return Board.fromFen(STARTING_FEN);
     }
 }

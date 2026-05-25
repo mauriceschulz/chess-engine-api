@@ -15,15 +15,19 @@ public class GameSession {
     private final Instant createdAt;
     private Instant updatedAt;
 
-    public GameSession (UUID id, Color playerColor) {
+    public GameSession (UUID id, Color playerColor, Board board, Color sideToMove) {
         this.id = id;
-        this.board = Board.createInitial();
+        this.board = board;
         this.playerColor = playerColor;
-        this.sideToMove = Color.WHITE;
+        this.sideToMove = sideToMove;
         this.status = GameStatus.ACTIVE;
         this.moveHistory = new ArrayList<>();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
+    }
+
+    public GameSession(UUID id, Color playerColor, Board board) {
+        this(id, playerColor, board, Color.WHITE);
     }
 
     public UUID getId() {

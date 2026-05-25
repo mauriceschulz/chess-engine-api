@@ -6,20 +6,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class BoardTest {
+    private static final String STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
     @Test
     void createInitialShouldReturnStartingFen() {
         Board board = Board.createInitial();
 
         assertEquals(
-                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
+                STARTING_FEN,
                 board.toFen()
         );
     }
 
     @Test
     void fenStringShouldBeModifiedAfterMove() {
-        Board board = Board.createInitial();
+        Board board = Board.fromFen(STARTING_FEN);
 
         Move move = Move.fromUci("e2e4");
         board.movePiece(move);
@@ -31,7 +32,7 @@ class BoardTest {
     }
 
     @Test
-    void boardFromFenShouldCreateBoardFromPiecePlacement() {
+    void fromFenShouldCreateBoardFromPiecePlacement() {
         Board board = Board.fromFen("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR");
 
         assertEquals(
@@ -41,7 +42,7 @@ class BoardTest {
     }
 
     @Test
-    void boardFromFenShouldAcceptFullFenString() {
+    void fromFenShouldAcceptFullFenString() {
         Board board = Board.fromFen(
                 "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
         );
@@ -53,7 +54,7 @@ class BoardTest {
     }
 
     @Test
-    void boardFromFenShouldRejectInvalidFenStrings() {
+    void fromFenShouldRejectInvalidFenStrings() {
         assertThrows(IllegalArgumentException.class, () -> Board.fromFen(null));
         assertThrows(IllegalArgumentException.class, () -> Board.fromFen(""));
         assertThrows(IllegalArgumentException.class, () -> Board.fromFen("8/8/8/8/8/8/8"));

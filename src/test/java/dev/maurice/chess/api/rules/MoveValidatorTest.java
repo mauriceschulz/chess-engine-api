@@ -1,5 +1,6 @@
 package dev.maurice.chess.api.rules;
 
+import dev.maurice.chess.api.domain.Board;
 import dev.maurice.chess.api.domain.Color;
 import dev.maurice.chess.api.domain.GameSession;
 import dev.maurice.chess.api.domain.Move;
@@ -12,13 +13,15 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MoveValidatorTest {
+    private static final String STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+
     private final PieceMovementValidator pieceMovementValidator = new PieceMovementValidator();
     private final MoveValidator moveValidator = new MoveValidator(pieceMovementValidator,
                                                                     new CheckValidator(pieceMovementValidator));
 
     @Test
     void validateShouldAcceptValidMove() {
-        GameSession game = new GameSession(UUID.randomUUID(), Color.WHITE);
+        GameSession game = newGame(STARTING_FEN);
         Move move = Move.fromUci("e2e4");
 
         assertDoesNotThrow(() -> moveValidator.validate(game, move));
@@ -26,7 +29,7 @@ class MoveValidatorTest {
 
     @Test
     void validateShouldRejectMoveToSameSquare() {
-        GameSession game = new GameSession(UUID.randomUUID(), Color.WHITE);
+        GameSession game = newGame(STARTING_FEN);
         Move move = Move.fromUci("e2e2");
 
         assertThrows(
@@ -37,7 +40,7 @@ class MoveValidatorTest {
 
     @Test
     void validateShouldRejectMoveFromEmptySquare() {
-        GameSession game = new GameSession(UUID.randomUUID(), Color.WHITE);
+        GameSession game = newGame(STARTING_FEN);
         Move move = Move.fromUci("e3e4");
 
         assertThrows(
@@ -48,7 +51,7 @@ class MoveValidatorTest {
 
     @Test
     void validateShouldRejectMoveByNonActivePlayer() {
-        GameSession game = new GameSession(UUID.randomUUID(), Color.WHITE);
+        GameSession game = newGame(STARTING_FEN);
         Move move = Move.fromUci("e7e5");
 
         assertThrows(
@@ -59,7 +62,7 @@ class MoveValidatorTest {
 
     @Test
     void validateShouldRejectTargetWithOwnPiece() {
-        GameSession game = new GameSession(UUID.randomUUID(), Color.WHITE);
+        GameSession game = newGame(STARTING_FEN);
         Move move = Move.fromUci("e1d1");
 
         assertThrows(
@@ -70,7 +73,7 @@ class MoveValidatorTest {
 
     @Test
     void validateShouldAcceptPawnSingleStep() {
-        GameSession game = new GameSession(UUID.randomUUID(), Color.WHITE);
+        GameSession game = newGame(STARTING_FEN);
         Move move = Move.fromUci("e2e3");
 
         assertDoesNotThrow(() -> moveValidator.validate(game, move));
@@ -78,7 +81,7 @@ class MoveValidatorTest {
 
     @Test
     void validateShouldAcceptBlackPawnMovesForward() {
-        GameSession game = new GameSession(UUID.randomUUID(), Color.WHITE);
+        GameSession game = newGame(STARTING_FEN);
         game.switchTurn();
         Move move = Move.fromUci("e7e5");
 
@@ -87,7 +90,7 @@ class MoveValidatorTest {
 
     @Test
     void validateShouldRejectPawnMovingBackward() {
-        GameSession game = new GameSession(UUID.randomUUID(), Color.WHITE);
+        GameSession game = newGame(STARTING_FEN);
         Move move = Move.fromUci("e2e1");
 
         assertThrows(
@@ -98,8 +101,7 @@ class MoveValidatorTest {
 
     @Test
     void validateShouldRejectPawnDoubleStepAfterStartRank() {
-        GameSession game = new GameSession(UUID.randomUUID(), Color.WHITE);
-        game.getBoard().movePiece(Move.fromUci("e2e3"));
+        GameSession game = newGame("rnbqkbnr/pppppppp/8/8/8/4P3/PPPP1PPP/RNBQKBNR");
         Move move = Move.fromUci("e3e5");
 
         assertThrows(
@@ -110,8 +112,7 @@ class MoveValidatorTest {
 
     @Test
     void validateShouldRejectPawnDoubleStepWhenBlocked() {
-        GameSession game = new GameSession(UUID.randomUUID(), Color.WHITE);
-        game.getBoard().movePiece(Move.fromUci("e7e3"));
+        GameSession game = newGame("rnbqkbnr/pppp1ppp/8/8/8/4p3/PPPPPPPP/RNBQKBNR");
         Move move = Move.fromUci("e2e4");
 
         assertThrows(
@@ -122,8 +123,7 @@ class MoveValidatorTest {
 
     @Test
     void validateShouldRejectPawnForwardMoveIntoOccupiedSquare() {
-        GameSession game = new GameSession(UUID.randomUUID(), Color.WHITE);
-        game.getBoard().movePiece(Move.fromUci("e7e3"));
+        GameSession game = newGame("rnbqkbnr/pppp1ppp/8/8/8/4p3/PPPPPPPP/RNBQKBNR");
         Move move = Move.fromUci("e2e3");
 
         assertThrows(
@@ -134,8 +134,7 @@ class MoveValidatorTest {
 
     @Test
     void validateShouldAcceptPawnDiagonalCapture() {
-        GameSession game = new GameSession(UUID.randomUUID(), Color.WHITE);
-        game.getBoard().movePiece(Move.fromUci("d7d3"));
+        GameSession game = newGame("rnbqkbnr/ppp1pppp/8/8/8/3p4/PPPPPPPP/RNBQKBNR");
         Move move = Move.fromUci("e2d3");
 
         assertDoesNotThrow(() -> moveValidator.validate(game, move));
@@ -143,12 +142,16 @@ class MoveValidatorTest {
 
     @Test
     void validateShouldRejectPawnDiagonalMoveWithoutCapture() {
-        GameSession game = new GameSession(UUID.randomUUID(), Color.WHITE);
+        GameSession game = newGame(STARTING_FEN);
         Move move = Move.fromUci("e2d3");
 
         assertThrows(
                 InvalidMoveException.class,
                 () -> moveValidator.validate(game, move)
         );
+    }
+
+    private GameSession newGame(String fen) {
+        return new GameSession(UUID.randomUUID(), Color.WHITE, Board.fromFen(fen));
     }
 }

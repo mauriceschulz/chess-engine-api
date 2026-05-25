@@ -7,11 +7,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class MoveValidator {
 
+    private final PieceMovementValidator pieceMovementValidator;
+
+    public MoveValidator(PieceMovementValidator pieceMovementValidator) {
+        this.pieceMovementValidator = pieceMovementValidator;
+    }
+
+
     public void validate(GameSession game, Move move) {
         validateDifferentSquares(move);
         validatePieceExists(game, move);
         validateCorrectTurn(game, move);
         validateTargetIsNotOwnPiece(game, move);
+        pieceMovementValidator.validate(game.getBoard(), move, game.getBoard().getPiece(move.getFrom()));
     }
 
     private void validateDifferentSquares(Move move) {

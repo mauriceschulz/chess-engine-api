@@ -73,18 +73,68 @@ public class PieceMovementValidator {
     }
 
     private boolean isValidBishopMove(Board board, Move move) {
-        return true;
+        Position from = move.getFrom();
+        Position to = move.getTo();
+
+        int rowDelta = Math.abs(from.getRow() - to.getRow());
+        int colDelta = Math.abs(from.getCol() - to.getCol());
+
+        if (rowDelta != colDelta) return false;
+
+        return isPathClear(board, move);
     }
 
     private boolean isValidRookMove(Board board, Move move) {
-        return true;
+        Position from = move.getFrom();
+        Position to = move.getTo();
+
+        boolean sameRow = from.getRow() == to.getRow();
+        boolean sameCol = from.getCol() == to.getCol();
+
+        if (!sameRow && !sameCol) return false;
+
+        return isPathClear(board, move);
     }
 
     private boolean isValidQueenMove(Board board, Move move) {
-        return true;
+        return isValidRookMove(board, move)
+                || isValidBishopMove(board, move);
     }
 
     private boolean isValidKingMove(Move move) {
+        Position from = move.getFrom();
+        Position to = move.getTo();
+
+        int rowDelta = Math.abs(from.getRow() - to.getRow());
+        int colDelta = Math.abs(from.getCol() - to.getCol());
+
+        return rowDelta <= 1 && colDelta <= 1;
+    }
+
+    private boolean isPathClear(Board board, Move move) {
+        Position from = move.getFrom();
+        Position to = move.getTo();
+
+        int rowStep = Integer.compare(to.getRow(), from.getRow());
+        int colStep = Integer.compare(to.getCol(), from.getCol());
+
+        int currentRow = from.getRow() + rowStep;
+        int currentCol = from.getCol() + colStep;
+
+        while (currentRow != to.getRow()
+                || currentCol != to.getCol()) {
+
+            Position current =
+                    new Position(currentRow, currentCol);
+
+            if (board.getPiece(current) != null) {
+                return false;
+            }
+
+            currentRow += rowStep;
+            currentCol += colStep;
+        }
+
         return true;
     }
 }

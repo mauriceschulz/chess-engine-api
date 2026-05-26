@@ -8,6 +8,7 @@ import dev.maurice.chess.api.dto.CreateGameRequest;
 import dev.maurice.chess.api.dto.GameResponse;
 import dev.maurice.chess.api.dto.MoveRequest;
 import dev.maurice.chess.api.dto.MoveResponse;
+import dev.maurice.chess.api.engine.RandomMoveEngine;
 import dev.maurice.chess.api.exception.GameNotFoundException;
 import dev.maurice.chess.api.rules.MoveValidator;
 import org.springframework.stereotype.Service;
@@ -22,9 +23,11 @@ public class GameService {
 
     private final Map<UUID, GameSession> games = new ConcurrentHashMap<>();
     private final MoveValidator moveValidator;
+    private final RandomMoveEngine randomMoveEngine;
 
-    public GameService(MoveValidator moveValidator) {
+    public GameService(MoveValidator moveValidator, RandomMoveEngine randomMoveEngine) {
         this.moveValidator = moveValidator;
+        this.randomMoveEngine = randomMoveEngine;
     }
 
     public GameResponse createGame(CreateGameRequest request) {
@@ -36,6 +39,8 @@ public class GameService {
                 : Board.fromFen(request.fen());
 
         GameSession game = new GameSession(UUID.randomUUID(), playerColor, board);
+
+        makeEngineMoveIfNeeded(game);
 
         games.put(game.getId(), game);
 
@@ -61,10 +66,11 @@ public class GameService {
         );
     }
 
-    private MoveResponse toMoveResponse(GameSession game, Move move) {
+    private MoveResponse toMoveResponse(GameSession game, Move playerMove, Move engineMove) {
         return new MoveResponse(
                 game.getId(),
-                move.toUci(),
+                playerMove.toUci(),
+                engineMove == null ? null : engineMove.toUci(),
                 game.getBoard().toFen(),
                 game.getSideToMove().name(),
                 game.getStatus().name(),
@@ -82,6 +88,20 @@ public class GameService {
         Move move = Move.fromUci(request.move());
         moveValidator.validate(game, move);
         game.applyMove(move);
-        return toMoveResponse(game, move);
+
+        Move engineMove = makeEngineMoveIfNeeded(game);
+
+        return toMoveResponse(game, move, engineMove);
+    }
+
+    private Move makeEngineMoveIfNeeded(GameSession game) {
+        if (game.getSideToMove() == game.getPlayerColor()) {
+            return null;
+        }
+
+        Move engineMove = randomMoveEngine.chooseMove(game);
+        game.applyMove(engineMove);
+
+        return engineMove;
     }
 }

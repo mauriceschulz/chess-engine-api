@@ -5,7 +5,8 @@ import java.util.UUID;
 
 public record MoveResponse(
         UUID gameId,
-        String move,
+        String playerMove,
+        String engineMove,
         String fen,
         String sideToMove,
         String status,

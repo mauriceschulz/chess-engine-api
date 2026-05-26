@@ -1,0 +1,46 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: |
+            ${{ secrets.SSH_PRIVATE_KEY }}
+            ${{ secrets.CLONE_GITHUB_PRIVATE_KEY }}
+
+      - name: Deploy to server
+        run: |
+          ssh -A -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} <<'EOF'
+            set -e
+
+            APP_DIR=/opt/chess-engine-api
+            REPO=git@github.com:mauriceschulz/chess-engine-api.git
+
+            mkdir -p ~/.ssh
+            chmod 700 ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null || true
+
+            if [ ! -d "$APP_DIR/.git" ]; then
+              mkdir -p "$APP_DIR"
+              git clone "$REPO" "$APP_DIR"
+            fi
+
+            cd "$APP_DIR"
+            git remote set-url origin "$REPO"
+            git fetch origin main
+            git reset --hard origin/main
+
+            docker compose up -d --build
+          EOF

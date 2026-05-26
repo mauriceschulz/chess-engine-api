@@ -1,0 +1,8 @@
+target/
+.git/
+.github/
+.idea/
+*.log
+.DS_Store
+README.md
+GITHUB_ACTIONS_DEPLOYMENT.md

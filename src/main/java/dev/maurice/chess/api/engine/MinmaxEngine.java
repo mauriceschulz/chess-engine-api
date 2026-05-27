@@ -14,11 +14,13 @@ import java.util.Random;
 public class MinmaxEngine implements ChessEngine {
     private final LegalMoveGenerator legalMoveGenerator;
     private final BoardEvaluator boardEvaluator;
+    private final OpeningBook openingBook;
     private final Random random = new Random();
 
-    public MinmaxEngine(LegalMoveGenerator legalMoveGenerator, BoardEvaluator boardEvaluator) {
+    public MinmaxEngine(LegalMoveGenerator legalMoveGenerator, BoardEvaluator boardEvaluator, OpeningBook openingBook) {
         this.legalMoveGenerator = legalMoveGenerator;
         this.boardEvaluator = boardEvaluator;
+        this.openingBook = openingBook;
     }
 
     @Override
@@ -35,6 +37,12 @@ public class MinmaxEngine implements ChessEngine {
         if (engineMoves.isEmpty()) {
             throw new IllegalStateException("No legal moves available");
         }
+
+        return openingBook.findMove(game, engineMoves)
+                .orElseGet(() -> chooseMinmaxMove(game, engineColor, engineMoves));
+    }
+
+    private Move chooseMinmaxMove(GameSession game, Color engineColor, List<Move> engineMoves) {
 
         List<Move> bestMoves = new ArrayList<>();
 

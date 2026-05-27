@@ -20,7 +20,7 @@ public class StatusGameResolver {
     public GameStatus resolve (GameSession game) {
         Color sideToMove = game.getSideToMove();
 
-        boolean hasLegalMove = !legalMoveGenerator.generateLegalMoves(game, sideToMove).isEmpty();
+        boolean hasLegalMove = legalMoveGenerator.hasAnyLegalMove(game, sideToMove);
 
         if (hasLegalMove) {
             return GameStatus.ACTIVE;

@@ -148,4 +148,35 @@ class LegalMoveGeneratorTest {
                 legalMoves.stream().anyMatch(move -> move.toUci().equals("e5d6"))
         );
     }
+
+    @Test
+    void generateLegalMovesShouldIncludePromotionMoves() {
+        GameSession gameSession = new GameSession(
+                UUID.randomUUID(),
+                Color.WHITE,
+                Board.fromFen("7k/4P3/8/8/8/8/8/4K3")
+        );
+
+        List<Move> legalMoves =
+                legalMoveGenerator.generateLegalMoves(
+                        gameSession,
+                        Color.WHITE
+                );
+
+        assertTrue(legalMoves.stream().anyMatch(move -> move.toUci().equals("e7e8q")));
+        assertTrue(legalMoves.stream().anyMatch(move -> move.toUci().equals("e7e8r")));
+        assertTrue(legalMoves.stream().anyMatch(move -> move.toUci().equals("e7e8b")));
+        assertTrue(legalMoves.stream().anyMatch(move -> move.toUci().equals("e7e8n")));
+    }
+
+    @Test
+    void hasAnyLegalMoveShouldReturnTrueWithoutCollectingAllMoves() {
+        GameSession gameSession = new GameSession(
+                UUID.randomUUID(),
+                Color.WHITE,
+                Board.createInitial()
+        );
+
+        assertTrue(legalMoveGenerator.hasAnyLegalMove(gameSession, Color.WHITE));
+    }
 }

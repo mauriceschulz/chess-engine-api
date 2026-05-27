@@ -4,6 +4,7 @@ import dev.maurice.chess.api.domain.Color;
 import dev.maurice.chess.api.domain.GameSession;
 import dev.maurice.chess.api.domain.GameStatus;
 import dev.maurice.chess.api.domain.Move;
+import dev.maurice.chess.api.rules.CheckValidator;
 import dev.maurice.chess.api.rules.LegalMoveGenerator;
 import dev.maurice.chess.api.rules.StatusGameResolver;
 import org.springframework.stereotype.Component;
@@ -15,23 +16,27 @@ import java.util.Random;
 @Component
 public class MinmaxEngine implements ChessEngine {
     private static final int CHECKMATE_SCORE = 1_000_000;
+    private static final int CHECK_SCORE = 50;
 
     private final LegalMoveGenerator legalMoveGenerator;
     private final BoardEvaluator boardEvaluator;
     private final OpeningBook openingBook;
     private final StatusGameResolver statusGameResolver;
+    private final CheckValidator checkValidator;
     private final Random random = new Random();
 
     public MinmaxEngine(
             LegalMoveGenerator legalMoveGenerator,
             BoardEvaluator boardEvaluator,
             OpeningBook openingBook,
-            StatusGameResolver statusGameResolver
+            StatusGameResolver statusGameResolver,
+            CheckValidator checkValidator
     ) {
         this.legalMoveGenerator = legalMoveGenerator;
         this.boardEvaluator = boardEvaluator;
         this.openingBook = openingBook;
         this.statusGameResolver = statusGameResolver;
+        this.checkValidator = checkValidator;
     }
 
     @Override
@@ -64,6 +69,7 @@ public class MinmaxEngine implements ChessEngine {
             GameSession afterEngineMove = game.copy();
 
             afterEngineMove.applyMove(engineMove);
+            int engineMoveCheckScore = evaluateCheck(afterEngineMove, engineColor);
 
             List<Move> opponentMoves =
                     legalMoveGenerator.generateLegalMoves(
@@ -86,7 +92,7 @@ public class MinmaxEngine implements ChessEngine {
 
                     afterOpponentMove.applyMove(opponentMove);
 
-                    int score = evaluatePosition(afterOpponentMove, engineColor);
+                    int score = evaluatePosition(afterOpponentMove, engineColor) + engineMoveCheckScore;
 
                     if (score < worstScoreForEngine) {
                         worstScoreForEngine = score;
@@ -116,12 +122,23 @@ public class MinmaxEngine implements ChessEngine {
         GameStatus status = statusGameResolver.resolve(position);
 
         return switch (status) {
-            case ACTIVE -> boardEvaluator.evaluate(position.getBoard(), engineColor);
+            case ACTIVE -> boardEvaluator.evaluate(position.getBoard(), engineColor)
+                    + evaluateCheck(position, engineColor);
             case CHECKMATE -> position.getSideToMove() == engineColor
                     ? -CHECKMATE_SCORE
                     : CHECKMATE_SCORE;
             case STALEMATE, DRAW -> 0;
             case RESIGNED -> boardEvaluator.evaluate(position.getBoard(), engineColor);
         };
+    }
+
+    private int evaluateCheck(GameSession position, Color engineColor) {
+        if (!checkValidator.isKingInCheck(position.getBoard(), position.getSideToMove())) {
+            return 0;
+        }
+
+        return position.getSideToMove() == engineColor
+                ? -CHECK_SCORE
+                : CHECK_SCORE;
     }
 }

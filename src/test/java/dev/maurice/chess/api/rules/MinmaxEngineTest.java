@@ -31,7 +31,8 @@ class MinmaxEngineTest {
             legalMoveGenerator,
             boardEvaluator,
             openingBook,
-            statusGameResolver
+            statusGameResolver,
+            new CheckValidator(new PieceMovementValidator())
     );
 
     @Test
@@ -79,6 +80,29 @@ class MinmaxEngineTest {
         Move chosenMove = minmaxEngine.chooseMove(game);
 
         assertEquals(safeMove.toUci(), chosenMove.toUci());
+    }
+
+    @Test
+    void chooseMoveShouldPreferCheckingMoveWhenMaterialIsEqual() {
+        GameSession game = new GameSession(
+                UUID.randomUUID(),
+                Color.WHITE,
+                Board.fromFen("4k3/8/8/8/8/8/8/4R2K"),
+                Color.WHITE,
+                EngineType.MINMAX
+        );
+        Move quietMove = Move.fromUci("e1e2");
+        Move checkingMove = Move.fromUci("e1e7");
+
+        legalMoveGenerator.whenMoves(List.of(), Color.WHITE, List.of(quietMove, checkingMove));
+        legalMoveGenerator.whenMoves(List.of(quietMove.toUci()), Color.BLACK, List.of());
+        legalMoveGenerator.whenMoves(List.of(checkingMove.toUci()), Color.BLACK, List.of());
+        statusGameResolver.whenStatus(List.of(quietMove.toUci()), GameStatus.ACTIVE);
+        statusGameResolver.whenStatus(List.of(checkingMove.toUci()), GameStatus.ACTIVE);
+
+        Move chosenMove = minmaxEngine.chooseMove(game);
+
+        assertEquals(checkingMove.toUci(), chosenMove.toUci());
     }
 
     private static class FakeLegalMoveGenerator extends LegalMoveGenerator {

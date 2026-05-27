@@ -7,7 +7,9 @@ import dev.maurice.chess.api.domain.Move;
 import dev.maurice.chess.api.rules.LegalMoveGenerator;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Component
 public class OnePlyEngine implements ChessEngine {
@@ -28,7 +30,7 @@ public class OnePlyEngine implements ChessEngine {
             throw new IllegalStateException("Cannot generate legal move in this position");
         }
 
-        Move bestMove = null;
+        List<Move> bestMoves = new ArrayList<>();
         int bestScore = Integer.MIN_VALUE;
 
         for (Move move : legalMoves) {
@@ -39,10 +41,17 @@ public class OnePlyEngine implements ChessEngine {
 
             if (score > bestScore) {
                 bestScore = score;
-                bestMove = move;
+                bestMoves.clear();
+                bestMoves.add(move);
+            } else if (score == bestScore) {
+                bestMoves.add(move);
             }
         }
 
-        return bestMove;
+        Random random = new Random();
+
+        return bestMoves.get(
+                random.nextInt(bestMoves.size())
+        );
     }
 }

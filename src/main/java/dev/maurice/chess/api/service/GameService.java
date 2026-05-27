@@ -1,9 +1,6 @@
 package dev.maurice.chess.api.service;
 
-import dev.maurice.chess.api.domain.Board;
-import dev.maurice.chess.api.domain.Color;
-import dev.maurice.chess.api.domain.GameSession;
-import dev.maurice.chess.api.domain.Move;
+import dev.maurice.chess.api.domain.*;
 import dev.maurice.chess.api.dto.CreateGameRequest;
 import dev.maurice.chess.api.dto.GameResponse;
 import dev.maurice.chess.api.dto.MoveRequest;
@@ -11,6 +8,7 @@ import dev.maurice.chess.api.dto.MoveResponse;
 import dev.maurice.chess.api.engine.RandomMoveEngine;
 import dev.maurice.chess.api.exception.GameNotFoundException;
 import dev.maurice.chess.api.rules.MoveValidator;
+import dev.maurice.chess.api.rules.StatusGameResolver;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,10 +22,12 @@ public class GameService {
     private final Map<UUID, GameSession> games = new ConcurrentHashMap<>();
     private final MoveValidator moveValidator;
     private final RandomMoveEngine randomMoveEngine;
+    private final StatusGameResolver statusGameResolver;
 
-    public GameService(MoveValidator moveValidator, RandomMoveEngine randomMoveEngine) {
+    public GameService(MoveValidator moveValidator, RandomMoveEngine randomMoveEngine, StatusGameResolver statusGameResolver) {
         this.moveValidator = moveValidator;
         this.randomMoveEngine = randomMoveEngine;
+        this.statusGameResolver = statusGameResolver;
     }
 
     public GameResponse createGame(CreateGameRequest request) {
@@ -38,8 +38,10 @@ public class GameService {
                 ? Board.createInitial()
                 : Board.fromFen(request.fen());
 
-        GameSession game = new GameSession(UUID.randomUUID(), playerColor, board);
+        Color sideToMove = parseSideToMove(request.fen());
 
+        GameSession game = new GameSession(UUID.randomUUID(), playerColor, board, sideToMove);
+        game.updateStatus(statusGameResolver.resolve(game));
         makeEngineMoveIfNeeded(game);
 
         games.put(game.getId(), game);
@@ -53,6 +55,23 @@ public class GameService {
             return Color.WHITE;
         }
         return Color.valueOf(value.toUpperCase());
+    }
+
+    private Color parseSideToMove(String fen) {
+        if (fen == null || fen.isBlank()) {
+            return Color.WHITE;
+        }
+
+        String[] fields = fen.trim().split("\\s+");
+        if (fields.length < 2) {
+            return Color.WHITE;
+        }
+
+        return switch (fields[1]) {
+            case "w" -> Color.WHITE;
+            case "b" -> Color.BLACK;
+            default -> throw new IllegalArgumentException("Invalid active color in FEN: " + fields[1]);
+        };
     }
 
     private GameResponse toGameResponse(GameSession game) {
@@ -89,18 +108,26 @@ public class GameService {
         moveValidator.validate(game, move);
         game.applyMove(move);
 
+        game.updateStatus(statusGameResolver.resolve(game));
+
         Move engineMove = makeEngineMoveIfNeeded(game);
 
         return toMoveResponse(game, move, engineMove);
     }
 
     private Move makeEngineMoveIfNeeded(GameSession game) {
+        if (game.getStatus() != GameStatus.ACTIVE) {
+            return null;
+        }
+
         if (game.getSideToMove() == game.getPlayerColor()) {
             return null;
         }
 
         Move engineMove = randomMoveEngine.chooseMove(game);
         game.applyMove(engineMove);
+
+        game.updateStatus(statusGameResolver.resolve(game));
 
         return engineMove;
     }

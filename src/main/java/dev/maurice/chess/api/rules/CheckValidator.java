@@ -51,7 +51,7 @@ public class CheckValidator {
         return false;
     }
 
-    private boolean isKingInCheck(Board board, Color kingColor) {
+    public boolean isKingInCheck(Board board, Color kingColor) {
         Position kingPosition = findKing(board, kingColor);
         return isSquareAttacked(board, kingPosition, kingColor.opposite());
     }

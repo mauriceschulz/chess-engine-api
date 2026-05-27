@@ -68,6 +68,7 @@ public class GameSession {
 
     public void updateStatus (GameStatus status) {
         this.status = status;
+        this.updatedAt = Instant.now();
     }
 
     public void applyMove(Move move) {

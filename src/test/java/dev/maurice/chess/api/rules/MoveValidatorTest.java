@@ -1,9 +1,6 @@
 package dev.maurice.chess.api.rules;
 
-import dev.maurice.chess.api.domain.Board;
-import dev.maurice.chess.api.domain.Color;
-import dev.maurice.chess.api.domain.GameSession;
-import dev.maurice.chess.api.domain.Move;
+import dev.maurice.chess.api.domain.*;
 import dev.maurice.chess.api.exception.InvalidMoveException;
 import org.junit.jupiter.api.Test;
 
@@ -16,8 +13,10 @@ class MoveValidatorTest {
     private static final String STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
     private final PieceMovementValidator pieceMovementValidator = new PieceMovementValidator();
+    private final CheckValidator checkValidator = new CheckValidator(pieceMovementValidator);
     private final MoveValidator moveValidator = new MoveValidator(pieceMovementValidator,
-                                                                    new CheckValidator(pieceMovementValidator));
+                                                                    checkValidator,
+                                                                    new CastlingValidator(checkValidator));
 
     @Test
     void validateShouldAcceptValidMove() {
@@ -148,6 +147,48 @@ class MoveValidatorTest {
         assertThrows(
                 InvalidMoveException.class,
                 () -> moveValidator.validate(game, move)
+        );
+    }
+
+    @Test
+    void validateShouldAcceptKingSideCastlingWhenLegal() {
+        GameSession game = newGame("r3k2r/8/8/8/8/8/8/R3K2R");
+        Move move = Move.fromUci("e1g1");
+
+        assertDoesNotThrow(() -> moveValidator.validate(game, move));
+    }
+
+    @Test
+    void validateShouldAcceptQueenSideCastlingWhenLegal() {
+        GameSession game = newGame("r3k2r/8/8/8/8/8/8/R3K2R");
+        Move move = Move.fromUci("e1c1");
+
+        assertDoesNotThrow(() -> moveValidator.validate(game, move));
+    }
+
+    @Test
+    void validateShouldRejectCastlingThroughCheck() {
+        GameSession game = newGame("r3kr1r/8/8/8/8/8/8/R3K2R");
+        Move move = Move.fromUci("e1g1");
+
+        assertThrows(
+                InvalidMoveException.class,
+                () -> moveValidator.validate(game, move)
+        );
+    }
+
+    @Test
+    void validateShouldRejectCastlingAfterRookMoved() {
+        GameSession game = newGame("r3k2r/8/8/8/8/8/8/R3K2R");
+
+        game.applyMove(Move.fromUci("h1h2"));
+        game.switchTurn();
+        game.applyMove(Move.fromUci("h2h1"));
+        game.switchTurn();
+
+        assertThrows(
+                InvalidMoveException.class,
+                () -> moveValidator.validate(game, Move.fromUci("e1g1"))
         );
     }
 

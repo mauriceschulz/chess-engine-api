@@ -8,7 +8,8 @@ import java.util.UUID;
 public class GameSession {
     private final UUID id;
     private final Board board;
-    private Color playerColor;
+    private final Color playerColor;
+    private final CastlingRights castlingRights;
     private Color sideToMove;
     private GameStatus status;
     List<String> moveHistory;
@@ -21,6 +22,7 @@ public class GameSession {
         this.playerColor = playerColor;
         this.sideToMove = sideToMove;
         this.status = GameStatus.ACTIVE;
+        this.castlingRights = CastlingRights.initial();
         this.moveHistory = new ArrayList<>();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
@@ -50,6 +52,30 @@ public class GameSession {
         return this.status;
     }
 
+    public CastlingRights getCastlingRights() {
+        return this.castlingRights;
+    }
+
+    public void updateCastleRights(Move move, Piece movedPiece) {
+        updateCastleRights(move, movedPiece, null);
+    }
+
+    public void updateCastleRights(Move move, Piece movedPiece, Piece capturedPiece) {
+        if (movedPiece == null) {
+            return;
+        }
+
+        if (movedPiece.type() == PieceType.KING) {
+            castlingRights.removeCastlingRights(movedPiece.color());
+        } else if (movedPiece.type() == PieceType.ROOK) {
+            removeCastlingRightForRookSquare(move.getFrom());
+        }
+
+        if (capturedPiece != null && capturedPiece.type() == PieceType.ROOK) {
+            removeCastlingRightForRookSquare(move.getTo());
+        }
+    }
+
     public List<String> getMoveHistory() {
         return this.moveHistory;
     }
@@ -72,9 +98,23 @@ public class GameSession {
     }
 
     public void applyMove(Move move) {
+        Piece movedPiece = board.getPiece(move.getFrom());
+        Piece capturedPiece = board.getPiece(move.getTo());
+
         board.movePiece(move);
+        updateCastleRights(move, movedPiece, capturedPiece);
+
         moveHistory.add(move.toUci());
         switchTurn();
         updatedAt = Instant.now();
+    }
+
+    private void removeCastlingRightForRookSquare(Position position) {
+        switch (position.toAlgebraic()) {
+            case "a1" -> castlingRights.removeQueenSide(Color.WHITE);
+            case "h1" -> castlingRights.removeKingSide(Color.WHITE);
+            case "a8" -> castlingRights.removeQueenSide(Color.BLACK);
+            case "h8" -> castlingRights.removeKingSide(Color.BLACK);
+        }
     }
 }

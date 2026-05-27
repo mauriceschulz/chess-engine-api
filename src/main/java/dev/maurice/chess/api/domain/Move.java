@@ -64,4 +64,11 @@ public class Move {
         return uci;
 
     }
+
+    public boolean isCastlingMove() {
+        int rowDelta = Math.abs(from.getRow() - to.getRow());
+        int colDelta = Math.abs(from.getCol() - to.getCol());
+
+        return rowDelta == 0 && colDelta == 2;
+    }
 }

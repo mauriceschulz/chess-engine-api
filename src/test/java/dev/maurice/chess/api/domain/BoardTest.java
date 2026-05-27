@@ -63,4 +63,28 @@ class BoardTest {
         assertThrows(IllegalArgumentException.class, () -> Board.fromFen("8/8/8/8/8/8/8/7"));
         assertThrows(IllegalArgumentException.class, () -> Board.fromFen("8/8/8/8/8/8/8/8/"));
     }
+
+    @Test
+    void movePieceShouldMoveRookForKingSideCastling() {
+        Board board = Board.fromFen("r3k2r/8/8/8/8/8/8/R3K2R");
+
+        board.movePiece(Move.fromUci("e1g1"));
+
+        assertEquals(
+                "r3k2r/8/8/8/8/8/8/R4RK1",
+                board.toFen()
+        );
+    }
+
+    @Test
+    void movePieceShouldMoveRookForQueenSideCastling() {
+        Board board = Board.fromFen("r3k2r/8/8/8/8/8/8/R3K2R");
+
+        board.movePiece(Move.fromUci("e1c1"));
+
+        assertEquals(
+                "r3k2r/8/8/8/8/8/8/2KR3R",
+                board.toFen()
+        );
+    }
 }

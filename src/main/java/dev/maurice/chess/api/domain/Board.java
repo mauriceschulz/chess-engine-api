@@ -30,6 +30,10 @@ public class Board {
             throw new IllegalStateException("No piece found at: " + move.getFrom().toAlgebraic());
         }
 
+        if (pieceToPlace.type() == PieceType.KING && move.isCastlingMove()) {
+            moveRookForCastling(move);
+        }
+
         if (pieceToPlace.type() == PieceType.PAWN && move.getPromotion() != null) {
             pieceToPlace = new Piece(move.getPromotion(), pieceToPlace.color());
         }
@@ -149,6 +153,27 @@ public class Board {
 
     private static Color colorFromFenChar(char value) {
         return Character.isUpperCase(value) ? Color.WHITE : Color.BLACK;
+    }
+
+    private void moveRookForCastling(Move move) {
+        Position kingTo = move.getTo();
+
+        boolean kingSide = kingTo.getCol() == 6;
+
+        int row = kingTo.getRow();
+
+        Position rookFrom = kingSide
+                ? new Position(row, 7)
+                : new Position(row, 0);
+
+        Position rookTo = kingSide
+                ? new Position(row, 5)
+                : new Position(row, 3);
+
+        Piece rook = getPiece(rookFrom);
+
+        setPiece(rookTo, rook);
+        setPiece(rookFrom, null);
     }
 
     private char toFenChar(Piece piece) {

@@ -1,9 +1,6 @@
 package dev.maurice.chess.api.rules;
 
-import dev.maurice.chess.api.domain.Board;
-import dev.maurice.chess.api.domain.Color;
-import dev.maurice.chess.api.domain.GameSession;
-import dev.maurice.chess.api.domain.Move;
+import dev.maurice.chess.api.domain.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -20,10 +17,14 @@ class LegalMoveGeneratorTest {
     private final CheckValidator checkValidator =
             new CheckValidator(pieceMovementValidator);
 
+    private final CastlingValidator castlingValidator =
+            new CastlingValidator(checkValidator);
+
     private final MoveValidator moveValidator =
             new MoveValidator(
                     pieceMovementValidator,
-                    checkValidator
+                    checkValidator,
+                    castlingValidator
             );
 
     private final LegalMoveGenerator legalMoveGenerator =
@@ -63,6 +64,28 @@ class LegalMoveGeneratorTest {
 
         assertTrue(
                 legalMoves.stream().anyMatch(move -> move.toUci().equals("e2e4"))
+        );
+    }
+
+    @Test
+    void generateLegalMovesShouldIncludeCastlingWhenLegal() {
+        GameSession gameSession = new GameSession(
+                UUID.randomUUID(),
+                Color.WHITE,
+                Board.fromFen("r3k2r/8/8/8/8/8/8/R3K2R")
+        );
+
+        List<Move> legalMoves =
+                legalMoveGenerator.generateLegalMoves(
+                        gameSession,
+                        Color.WHITE
+                );
+
+        assertTrue(
+                legalMoves.stream().anyMatch(move -> move.toUci().equals("e1g1"))
+        );
+        assertTrue(
+                legalMoves.stream().anyMatch(move -> move.toUci().equals("e1c1"))
         );
     }
 }

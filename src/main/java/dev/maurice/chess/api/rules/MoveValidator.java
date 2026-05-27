@@ -9,10 +9,12 @@ public class MoveValidator {
 
     private final PieceMovementValidator pieceMovementValidator;
     private final CheckValidator checkValidator;
+    private final CastlingValidator castlingValidator;
 
-    public MoveValidator(PieceMovementValidator pieceMovementValidator, CheckValidator checkValidator) {
+    public MoveValidator(PieceMovementValidator pieceMovementValidator, CheckValidator checkValidator, CastlingValidator castlingValidator) {
         this.pieceMovementValidator = pieceMovementValidator;
         this.checkValidator = checkValidator;
+        this.castlingValidator = castlingValidator;
     }
 
 
@@ -21,6 +23,15 @@ public class MoveValidator {
         validatePieceExists(game, move);
         validateCorrectTurn(game, move);
         validateTargetIsNotOwnPiece(game, move);
+
+        Board board = game.getBoard();
+        Piece piece = board.getPiece(move.getFrom());
+
+        if (piece.type() == PieceType.KING && move.isCastlingMove()) {
+            castlingValidator.validate(game, move);
+            return;
+        }
+
         pieceMovementValidator.validate(game.getBoard(), move, game.getBoard().getPiece(move.getFrom()));
         checkValidator.validateKingSafety(game, move);
     }

@@ -87,4 +87,16 @@ class BoardTest {
                 board.toFen()
         );
     }
+
+    @Test
+    void movePieceShouldRemoveCapturedPawnForEnPassant() {
+        Board board = Board.fromFen("8/8/8/3pP3/8/8/8/8");
+
+        board.movePiece(Move.fromUci("e5d6"));
+
+        assertEquals(
+                "8/8/3P4/8/8/8/8/8",
+                board.toFen()
+        );
+    }
 }

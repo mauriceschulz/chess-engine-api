@@ -88,4 +88,64 @@ class LegalMoveGeneratorTest {
                 legalMoves.stream().anyMatch(move -> move.toUci().equals("e1c1"))
         );
     }
+
+    @Test
+    void generateLegalMovesShouldAllowBlackKingSideCastling() {
+        GameSession gameSession = new GameSession(
+                UUID.randomUUID(),
+                Color.BLACK,
+                Board.fromFen("r3k2r/8/8/8/8/8/8/R3K2R"),
+                Color.BLACK
+        );
+
+        List<Move> legalMoves =
+                legalMoveGenerator.generateLegalMoves(
+                        gameSession,
+                        Color.BLACK
+                );
+
+        assertTrue(
+                legalMoves.stream().anyMatch(move -> move.toUci().equals("e8g8"))
+        );
+    }
+
+    @Test
+    void generateLegalMovesShouldAllowBlackQueenSideCastling() {
+        GameSession gameSession = new GameSession(
+                UUID.randomUUID(),
+                Color.BLACK,
+                Board.fromFen("r3k2r/8/8/8/8/8/8/R3K2R"),
+                Color.BLACK
+        );
+
+        List<Move> legalMoves =
+                legalMoveGenerator.generateLegalMoves(
+                        gameSession,
+                        Color.BLACK
+                );
+
+        assertTrue(
+                legalMoves.stream().anyMatch(move -> move.toUci().equals("e8c8"))
+        );
+    }
+
+    @Test
+    void generateLegalMovesShouldIncludeEnPassantWhenLegal() {
+        GameSession gameSession = new GameSession(
+                UUID.randomUUID(),
+                Color.WHITE,
+                Board.fromFen("4k3/8/8/3pP3/8/8/8/4K3")
+        );
+        gameSession.getMoveHistory().add("d7d5");
+
+        List<Move> legalMoves =
+                legalMoveGenerator.generateLegalMoves(
+                        gameSession,
+                        Color.WHITE
+                );
+
+        assertTrue(
+                legalMoves.stream().anyMatch(move -> move.toUci().equals("e5d6"))
+        );
+    }
 }

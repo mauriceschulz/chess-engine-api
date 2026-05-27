@@ -77,7 +77,6 @@ public class PieceMovementValidator {
             }
         }
 
-        // TODO: Add en passant support for diagonal pawn moves to empty squares.
         if (Math.abs(colDelta) == 1 && rowDelta == direction) {
             return target != null && target.color() != piece.color();
         }

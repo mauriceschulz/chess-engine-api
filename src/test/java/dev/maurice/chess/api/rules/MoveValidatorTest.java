@@ -151,6 +151,40 @@ class MoveValidatorTest {
     }
 
     @Test
+    void validateShouldAcceptWhiteEnPassantImmediatelyAfterBlackDoubleStep() {
+        GameSession game = newGame("4k3/8/8/3pP3/8/8/8/4K3");
+        game.getMoveHistory().add("d7d5");
+        Move move = Move.fromUci("e5d6");
+
+        assertDoesNotThrow(() -> moveValidator.validate(game, move));
+    }
+
+    @Test
+    void validateShouldRejectEnPassantWithoutPreviousDoubleStep() {
+        GameSession game = newGame("4k3/8/8/3pP3/8/8/8/4K3");
+        Move move = Move.fromUci("e5d6");
+
+        assertThrows(
+                InvalidMoveException.class,
+                () -> moveValidator.validate(game, move)
+        );
+    }
+
+    @Test
+    void validateShouldAcceptBlackEnPassantImmediatelyAfterWhiteDoubleStep() {
+        GameSession game = new GameSession(
+                UUID.randomUUID(),
+                Color.WHITE,
+                Board.fromFen("4k3/8/8/8/3Pp3/8/8/4K3"),
+                Color.BLACK
+        );
+        game.getMoveHistory().add("d2d4");
+        Move move = Move.fromUci("e4d3");
+
+        assertDoesNotThrow(() -> moveValidator.validate(game, move));
+    }
+
+    @Test
     void validateShouldAcceptKingSideCastlingWhenLegal() {
         GameSession game = newGame("r3k2r/8/8/8/8/8/8/R3K2R");
         Move move = Move.fromUci("e1g1");

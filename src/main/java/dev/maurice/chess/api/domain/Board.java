@@ -34,12 +34,24 @@ public class Board {
             moveRookForCastling(move);
         }
 
+        if (isEnPassantCapture(move, pieceToPlace)) {
+            Position capturedPawn = new Position(move.getFrom().getRow(), move.getTo().getCol());
+            setPiece(capturedPawn, null);
+        }
+
         if (pieceToPlace.type() == PieceType.PAWN && move.getPromotion() != null) {
             pieceToPlace = new Piece(move.getPromotion(), pieceToPlace.color());
         }
 
         setPiece(move.getTo(), pieceToPlace);
         setPiece(move.getFrom(), null);
+    }
+
+    private boolean isEnPassantCapture(Move move, Piece piece) {
+        return piece.type() == PieceType.PAWN
+                && getPiece(move.getTo()) == null
+                && Math.abs(move.getTo().getCol() - move.getFrom().getCol()) == 1
+                && Math.abs(move.getTo().getRow() - move.getFrom().getRow()) == 1;
     }
 
     public static Board createInitial() {

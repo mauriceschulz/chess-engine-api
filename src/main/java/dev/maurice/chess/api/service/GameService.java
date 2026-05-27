@@ -5,7 +5,8 @@ import dev.maurice.chess.api.dto.CreateGameRequest;
 import dev.maurice.chess.api.dto.GameResponse;
 import dev.maurice.chess.api.dto.MoveRequest;
 import dev.maurice.chess.api.dto.MoveResponse;
-import dev.maurice.chess.api.engine.RandomMoveEngine;
+import dev.maurice.chess.api.engine.ChessEngine;
+import dev.maurice.chess.api.engine.ChessEngineSelector;
 import dev.maurice.chess.api.exception.GameNotFoundException;
 import dev.maurice.chess.api.rules.MoveValidator;
 import dev.maurice.chess.api.rules.StatusGameResolver;
@@ -21,12 +22,12 @@ public class GameService {
 
     private final Map<UUID, GameSession> games = new ConcurrentHashMap<>();
     private final MoveValidator moveValidator;
-    private final RandomMoveEngine randomMoveEngine;
+    private final ChessEngineSelector chessEngineSelector;
     private final StatusGameResolver statusGameResolver;
 
-    public GameService(MoveValidator moveValidator, RandomMoveEngine randomMoveEngine, StatusGameResolver statusGameResolver) {
+    public GameService(MoveValidator moveValidator, ChessEngineSelector chessEngineSelector, StatusGameResolver statusGameResolver) {
         this.moveValidator = moveValidator;
-        this.randomMoveEngine = randomMoveEngine;
+        this.chessEngineSelector = chessEngineSelector;
         this.statusGameResolver = statusGameResolver;
     }
 
@@ -39,8 +40,9 @@ public class GameService {
                 : Board.fromFen(request.fen());
 
         Color sideToMove = parseSideToMove(request.fen());
+        EngineType engineType = parseEngineType(request.engineType());
 
-        GameSession game = new GameSession(UUID.randomUUID(), playerColor, board, sideToMove);
+        GameSession game = new GameSession(UUID.randomUUID(), playerColor, board, sideToMove, engineType);
         game.updateStatus(statusGameResolver.resolve(game));
         makeEngineMoveIfNeeded(game);
 
@@ -55,6 +57,14 @@ public class GameService {
             return Color.WHITE;
         }
         return Color.valueOf(value.toUpperCase());
+    }
+
+    private EngineType parseEngineType(String value) {
+        if (value == null || value.isBlank()) {
+            return EngineType.RANDOM;
+        }
+
+        return EngineType.valueOf(value.toUpperCase());
     }
 
     private Color parseSideToMove(String fen) {
@@ -79,6 +89,7 @@ public class GameService {
                 game.getId(),
                 game.getBoard().toFen(),
                 game.getPlayerColor().name(),
+                game.getEngineType().name(),
                 game.getSideToMove().name(),
                 game.getStatus().name(),
                 List.copyOf(game.getMoveHistory())
@@ -91,6 +102,7 @@ public class GameService {
                 playerMove.toUci(),
                 engineMove == null ? null : engineMove.toUci(),
                 game.getBoard().toFen(),
+                game.getEngineType().name(),
                 game.getSideToMove().name(),
                 game.getStatus().name(),
                 List.copyOf(game.getMoveHistory())
@@ -124,7 +136,8 @@ public class GameService {
             return null;
         }
 
-        Move engineMove = randomMoveEngine.chooseMove(game);
+        ChessEngine engine = chessEngineSelector.select(game.getEngineType());
+        Move engineMove = engine.chooseMove(game);
         game.applyMove(engineMove);
 
         game.updateStatus(statusGameResolver.resolve(game));

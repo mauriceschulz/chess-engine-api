@@ -7,6 +7,7 @@ public record GameResponse(
         UUID gameId,
         String fen,
         String playerColor,
+        String engineType,
         String sideToMove,
         String status,
         List<String> moveHistory

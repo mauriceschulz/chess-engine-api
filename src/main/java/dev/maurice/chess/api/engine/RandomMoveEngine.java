@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 @Component
-public class RandomMoveEngine {
+public class RandomMoveEngine implements ChessEngine{
     private final LegalMoveGenerator legalMoveGenerator;
     Random random = new Random();
 
@@ -17,6 +17,7 @@ public class RandomMoveEngine {
         this.legalMoveGenerator = legalMoveGenerator;
     }
 
+    @Override
     public Move chooseMove(GameSession game) {
         List<Move> legalMoves = legalMoveGenerator.generateLegalMoves(game, game.getSideToMove());
 

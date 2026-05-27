@@ -9,6 +9,7 @@ public class GameSession {
     private final UUID id;
     private final Board board;
     private final Color playerColor;
+    private final EngineType engineType;
     private final CastlingRights castlingRights;
     private Color sideToMove;
     private GameStatus status;
@@ -16,16 +17,21 @@ public class GameSession {
     private final Instant createdAt;
     private Instant updatedAt;
 
-    public GameSession (UUID id, Color playerColor, Board board, Color sideToMove) {
+    public GameSession(UUID id, Color playerColor, Board board, Color sideToMove, EngineType engineType) {
         this.id = id;
         this.board = board;
         this.playerColor = playerColor;
+        this.engineType = engineType;
         this.sideToMove = sideToMove;
         this.status = GameStatus.ACTIVE;
         this.castlingRights = CastlingRights.initial();
         this.moveHistory = new ArrayList<>();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
+    }
+
+    public GameSession(UUID id, Color playerColor, Board board, Color sideToMove) {
+        this(id, playerColor, board, sideToMove, EngineType.RANDOM);
     }
 
     public GameSession(UUID id, Color playerColor, Board board) {
@@ -42,6 +48,10 @@ public class GameSession {
 
     public Color getPlayerColor() {
         return this.playerColor;
+    }
+
+    public EngineType getEngineType() {
+        return this.engineType;
     }
 
     public Color getSideToMove() {

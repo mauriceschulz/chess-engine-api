@@ -8,6 +8,7 @@ public record MoveResponse(
         String playerMove,
         String engineMove,
         String fen,
+        String engineType,
         String sideToMove,
         String status,
         List<String> moveHistory

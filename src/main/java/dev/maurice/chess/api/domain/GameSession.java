@@ -18,16 +18,42 @@ public class GameSession {
     private Instant updatedAt;
 
     public GameSession(UUID id, Color playerColor, Board board, Color sideToMove, EngineType engineType) {
+        this(
+                id,
+                playerColor,
+                board,
+                sideToMove,
+                engineType,
+                CastlingRights.initial(),
+                new ArrayList<>(),
+                GameStatus.ACTIVE,
+                Instant.now(),
+                Instant.now()
+        );
+    }
+
+    private GameSession(
+            UUID id,
+            Color playerColor,
+            Board board,
+            Color sideToMove,
+            EngineType engineType,
+            CastlingRights castlingRights,
+            List<String> moveHistory,
+            GameStatus status,
+            Instant createdAt,
+            Instant updatedAt
+    ) {
         this.id = id;
         this.board = board;
         this.playerColor = playerColor;
         this.engineType = engineType;
         this.sideToMove = sideToMove;
-        this.status = GameStatus.ACTIVE;
-        this.castlingRights = CastlingRights.initial();
-        this.moveHistory = new ArrayList<>();
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
+        this.status = status;
+        this.castlingRights = castlingRights;
+        this.moveHistory = new ArrayList<>(moveHistory);
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     public GameSession(UUID id, Color playerColor, Board board, Color sideToMove) {
@@ -126,5 +152,20 @@ public class GameSession {
             case "a8" -> castlingRights.removeQueenSide(Color.BLACK);
             case "h8" -> castlingRights.removeKingSide(Color.BLACK);
         }
+    }
+
+    public GameSession copy() {
+        return new GameSession(
+                this.getId(),
+                this.getPlayerColor(),
+                this.getBoard().copy(),
+                this.getSideToMove(),
+                this.getEngineType(),
+                this.getCastlingRights().copy(),
+                this.getMoveHistory(),
+                this.getStatus(),
+                this.getCreatedAt(),
+                this.getUpdatedAt()
+        );
     }
 }

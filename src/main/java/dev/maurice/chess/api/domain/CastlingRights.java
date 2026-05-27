@@ -18,6 +18,10 @@ public class CastlingRights {
         return new CastlingRights(true, true, true, true);
     }
 
+    public CastlingRights copy() {
+        return new CastlingRights(whiteKingSide, whiteQueenSide, blackKingSide, blackQueenSide);
+    }
+
     public boolean canCastle(Color color, boolean kingSide) {
         if (color == Color.WHITE) {
             return kingSide ? whiteKingSide : whiteQueenSide;

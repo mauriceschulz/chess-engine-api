@@ -24,13 +24,17 @@ public class Board {
     }
 
     public void movePiece(Move move) {
-        Piece piece = getPiece(move.getFrom());
+        Piece pieceToPlace = getPiece(move.getFrom());
 
-        if (piece == null) {
+        if (pieceToPlace == null) {
             throw new IllegalStateException("No piece found at: " + move.getFrom().toAlgebraic());
         }
 
-        setPiece(move.getTo(), piece);
+        if (pieceToPlace.type() == PieceType.PAWN && move.getPromotion() != null) {
+            pieceToPlace = new Piece(move.getPromotion(), pieceToPlace.color());
+        }
+
+        setPiece(move.getTo(), pieceToPlace);
         setPiece(move.getFrom(), null);
     }
 

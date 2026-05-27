@@ -47,6 +47,19 @@ public class PieceMovementValidator {
 
         Piece target = board.getPiece(to);
 
+        boolean reachesPromotionRank =
+                piece.color().isWhite()
+                        ? to.getRow() == 7
+                        : to.getRow() == 0;
+
+        if (reachesPromotionRank && move.getPromotion() == null) {
+            return false;
+        }
+
+        if (!reachesPromotionRank && move.getPromotion() != null) {
+            return false;
+        }
+
         if (colDelta == 0) {
             if (target != null) {
                 return false;
